@@ -243,7 +243,8 @@
 
 
   /* tabs */
-  .tab-bar{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:22px;}
+  .tab-row{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:22px;}
+  .tab-bar{display:flex; gap:8px; flex-wrap:wrap;}
   .tab-btn{
     font-family:'Kanit','Noto Sans Thai',sans-serif; font-weight:600; font-size:14px; color:var(--text);
     background:var(--surface); border:1.5px solid var(--line); border-radius:12px;
@@ -252,6 +253,16 @@
   }
   .tab-btn:hover{border-color:var(--accent-soft);}
   .tab-btn.active{background:var(--accent); border-color:var(--accent); color:#fff;}
+
+  .reset-btn{
+    display:inline-flex; align-items:center; gap:7px;
+    font-family:'Noto Sans Thai',sans-serif; font-weight:600; font-size:13.5px; color:var(--muted);
+    background:var(--surface); border:1.5px solid var(--line); border-radius:11px;
+    padding:9px 15px; cursor:pointer; transition:border-color .15s,color .15s,background .15s;
+  }
+  .reset-btn:hover{color:var(--accent-strong); border-color:var(--accent-soft); background:var(--surface-2);}
+  .reset-btn:active svg{transform:rotate(-90deg);}
+  .reset-btn svg{width:15px; height:15px; flex:none; transition:transform .2s;}
 
   .leaflet-wrap{display:flex; flex-direction:column; gap:18px; max-width:760px; margin:0 auto;}
   .leaflet-page{margin:0; background:var(--surface); border:1px solid var(--line); border-radius:16px; overflow:hidden; box-shadow:var(--shadow);}
@@ -277,9 +288,15 @@
     </div>
   </header>
 
-  <div class="tab-bar" role="tablist">
-    <button class="tab-btn active" data-view="calc" type="button">ตัวคำนวณส่วนลด</button>
-    <button class="tab-btn" data-view="leaflet" type="button">E-Leaflet</button>
+  <div class="tab-row">
+    <div class="tab-bar" role="tablist">
+      <button class="tab-btn active" data-view="calc" type="button">ตัวคำนวณส่วนลด</button>
+      <button class="tab-btn" data-view="leaflet" type="button">E-Leaflet</button>
+    </div>
+    <button class="reset-btn" id="reset-btn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      รีเซ็ตตัวกรอง
+    </button>
   </div>
 
   <div id="view-calc" class="view">
@@ -456,27 +473,30 @@
     {label:'เดือนที่ 36 (ก.ย.72)',              gwoA:30, gwoB:30, dmgA:20, dmgB:20}
   ];
 
-  var state = {
-    series:'Pro',
-    modelId:'pro-256',
-    mode:'package',
-    pkg:1499,
-    customerType:'existing',
-    groupA:'none',
-    tenure:'1y',
-    tradeIn:false,
-    tradeInCard:false,
-    tradeInPre:false,
-    groupC:'none',
-    truepointTier:'big',
-    truepointBlack:false,
-    dtaccoinTier:'big',
-    dtaccoinPlatinum:false,
-    allMember:false,
-    vc:'none',
-    bbCondition:'gwo',
-    bbRangeIdx:0
-  };
+  function getDefaultState(){
+    return {
+      series:'Pro',
+      modelId:'pro-256',
+      mode:'package',
+      pkg:1499,
+      customerType:'existing',
+      groupA:'none',
+      tenure:'1y',
+      tradeIn:false,
+      tradeInCard:false,
+      tradeInPre:false,
+      groupC:'none',
+      truepointTier:'big',
+      truepointBlack:false,
+      dtaccoinTier:'big',
+      dtaccoinPlatinum:false,
+      allMember:false,
+      vc:'none',
+      bbCondition:'gwo',
+      bbRangeIdx:0
+    };
+  }
+  var state = getDefaultState();
 
   function fmt(n){
     n = Math.round(n);
@@ -578,7 +598,7 @@
 
   var custList = document.getElementById('customer-type-list');
   var custDefs = [
-    {key:'existing', label:'ลูกค้าทรู ดีแทค รายเดือนปัจจุบัน', note:'อายุการใช้งาน 12 เดือนขึ้นไป · ไม่ต้องชำระค่าบริการล่วงหน้า'},
+    {key:'existing', label:'ลูกค้าทรู ดีแทค รายเดือนปัจจุบัน', note:'*กรณีอายุการใช้งาน 12 เดือนขึ้นไป · ไม่ต้องชำระค่าบริการล่วงหน้า'},
     {key:'new', label:'เปิดเบอร์ใหม่ / ย้ายค่ายเบอร์เดิม / เปลี่ยนเติมเงินเป็นรายเดือน', note:'อายุการใช้งานปัจจุบัน 90 วัน · มีค่าบริการล่วงหน้าตามแพ็กเกจ'}
   ];
   custDefs.forEach(function(d){
@@ -912,6 +932,17 @@
       viewCalc.hidden = view !== 'calc';
       viewLeaflet.hidden = view !== 'leaflet';
     });
+  });
+
+  /* ---------- RESET ---------- */
+  var resetBtn = document.getElementById('reset-btn');
+  resetBtn.addEventListener('click', function(){
+    state = getDefaultState();
+    bbCondition.value = state.bbCondition;
+    bbRange.value = state.bbRangeIdx;
+    renderSeries();
+    renderStorage();
+    renderAll();
   });
 
   renderSeries();
