@@ -192,6 +192,7 @@
     border:1px solid color-mix(in srgb, var(--gold) 35%, transparent);
     border-radius:12px; padding:12px 14px; margin-top:14px; font-size:13.5px;
   }
+  .gift-banner[hidden]{display:none;}
   .gift-banner svg{flex:none; width:18px; height:18px; color:var(--gold); margin-top:1px;}
 
   /* summary panel */
@@ -360,6 +361,10 @@
       <!-- STEP 4: VALUE CARE -->
       <section class="card" id="step-vc">
         <h2><span class="step-no">4</span>เพิ่มความคุ้มครอง True Value Care <span style="font-weight:400;color:var(--muted);font-size:13px;">(ไม่บังคับ)</span></h2>
+        <div class="gift-banner" id="vc-included-note" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v9H4v-9M2 7h20v5H2V7Zm10 14V7M12 7c-1.5-4-6-4-6-1s3 1 6 1Zm0 0c1.5-4 6-4 6-1s-3 1-6 1Z"/></svg>
+          <span>สมัครแพ็ก 1,499 บาท/เดือน ได้รับ True Value Care ฟรี 1 ปีอยู่แล้ว ไม่ต้องซื้อความคุ้มครองเพิ่ม</span>
+        </div>
         <div class="radio-list" id="vc-list"></div>
       </section>
 
@@ -798,6 +803,9 @@ var OLD_MODELS = [
     var v = m[tradeInColumnKey()];
     return v === null || v === undefined ? 0 : v;
   }
+  function tradeInPreTradeBonus(){
+    return (state.mode === 'package' && state.pkg === 699 && state.tradeInPeriod === 'pretrade') ? 500 : 0;
+  }
   function renderGroupB(){
     groupBList.innerHTML = '';
     var isPkg = state.mode === 'package';
@@ -841,6 +849,13 @@ var OLD_MODELS = [
       periodLabel.style.marginTop = '10px';
       sub.appendChild(periodLabel);
       sub.appendChild(periodSel);
+      if(state.pkg === 699){
+        var preTradeHint = el('div','opt-note');
+        preTradeHint.textContent = state.tradeInPeriod === 'pretrade'
+          ? '* ลูกค้า Pre-Trade ซื้อพร้อมแพ็กเกจ 699 รับส่วนลดเพิ่มเติมพิเศษอีก 500 บาท'
+          : 'ลูกค้า Pre-Trade ที่ซื้อพร้อมแพ็กเกจ 699 รับส่วนลดเพิ่มเติมพิเศษอีก 500 บาท';
+        sub.appendChild(preTradeHint);
+      }
 
       var paySel = el('select');
       paySel.innerHTML =
@@ -855,12 +870,15 @@ var OLD_MODELS = [
 
       var pkgBonus = TRADEIN_PKG_BONUS[state.pkg] || 0;
       var oldAmt = tradeInOldModelAmt();
+      var preTradeBonus = tradeInPreTradeBonus();
       var note = el('div','opt-note');
       note.style.marginTop = '10px';
       if(oldAmt === 0 && OLD_MODELS[state.tradeInModelIdx][tradeInColumnKey()] === null){
-        note.textContent = 'รุ่นเครื่องเก่าและเงื่อนไขที่เลือกนี้ไม่ร่วมรายการส่วนลดต่อที่ 2 (รับเฉพาะส่วนลดตามแพ็กเกจ '+fmt(pkgBonus)+')';
+        note.textContent = 'รุ่นเครื่องเก่าและเงื่อนไขที่เลือกนี้ไม่ร่วมรายการส่วนลดต่อที่ 2 (รับเฉพาะส่วนลดตามแพ็กเกจ '+fmt(pkgBonus)+(preTradeBonus?' + ส่วนลดพิเศษ Pre-Trade '+fmt(preTradeBonus):'')+')';
       } else {
-        note.textContent = 'ส่วนลดตามแพ็กเกจ '+fmt(pkgBonus)+' + ส่วนลดตามรุ่นเครื่องเก่า '+fmt(oldAmt)+' = รวม '+fmt(pkgBonus+oldAmt)+' บาท';
+        note.textContent = 'ส่วนลดตามแพ็กเกจ '+fmt(pkgBonus)+' + ส่วนลดตามรุ่นเครื่องเก่า '+fmt(oldAmt)+
+          (preTradeBonus ? ' + ส่วนลดพิเศษ Pre-Trade '+fmt(preTradeBonus) : '') +
+          ' = รวม '+fmt(pkgBonus+oldAmt+preTradeBonus)+' บาท';
       }
       sub.appendChild(note);
 
@@ -946,6 +964,7 @@ var OLD_MODELS = [
   var vcList = document.getElementById('vc-list');
   function renderVC(){
     vcList.innerHTML = '';
+    document.getElementById('vc-included-note').hidden = !(state.mode === 'package' && state.pkg === 1499);
     var m = getModel();
     var defs = [
       {key:'none', label:'ไม่เพิ่มความคุ้มครอง', note:''},
@@ -995,7 +1014,7 @@ var OLD_MODELS = [
     if(!state.tradeIn) return 0;
     if(state.mode !== 'package') return 5500;
     var pkgBonus = TRADEIN_PKG_BONUS[state.pkg] || 0;
-    return pkgBonus + tradeInOldModelAmt();
+    return pkgBonus + tradeInOldModelAmt() + tradeInPreTradeBonus();
   }
   function computeGroupC(){
     if(!(state.mode === 'package' && state.pkg >= 699)) return 0;
