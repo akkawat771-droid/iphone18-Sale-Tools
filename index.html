@@ -93,13 +93,6 @@
   }
   .hero h1{font-size:clamp(26px,4vw,36px); font-weight:700; color:var(--text); margin-bottom:10px;}
   .hero .sub{color:var(--muted); max-width:62ch; margin:0 0 16px; font-size:15px;}
-  .promo-pill{
-    display:inline-flex; align-items:center; gap:8px;
-    background:var(--surface-2); border:1px solid var(--accent-soft);
-    color:var(--accent-strong); font-weight:600; font-size:13px;
-    padding:8px 14px; border-radius:999px;
-  }
-  .promo-pill svg{width:14px;height:14px;flex:none;}
 
   /* layout */
   .layout{display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:start;}
@@ -227,10 +220,18 @@
   }
   .extra-lines{margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);}
   .extra-lines .sum-row{font-size:12.5px;}
+  .upgrade-box{
+    margin-top:14px; background:var(--gold-soft); border:1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+    border-radius:12px; padding:12px 14px;
+  }
+  .upgrade-box[hidden]{display:none;}
+  .upgrade-box .upgrade-title{font-size:12.5px; font-weight:700; color:var(--gold); margin-bottom:6px;}
+  .upgrade-box .sum-row{font-size:12.5px; padding:4px 0;}
+  .upgrade-box .sum-row strong{font-weight:700;}
+  .upgrade-box .upgrade-note{font-size:11.5px; color:var(--muted-2); margin-top:6px; line-height:1.5;}
 
   /* buyback tool */
-  .buyback-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;}
-  @media (max-width:520px){ .buyback-grid{grid-template-columns:1fr;} }
+  .buyback-grid{display:grid; grid-template-columns:1fr; max-width:260px; gap:10px; margin-bottom:14px;}
   .select-field{display:flex; flex-direction:column; gap:6px;}
   .select-field label{font-size:12.5px; font-weight:600; color:var(--muted);}
   .select-field select{
@@ -284,10 +285,6 @@
     <p class="eyebrow">เครื่องมือฝ่ายขาย · True/dtac Retail</p>
     <h1>ตัวคำนวณส่วนลด iPhone 18 Series</h1>
     <p class="sub">เลือกรุ่นเครื่อง รูปแบบการซื้อ และสิทธิ์ของลูกค้า ระบบจะรวมส่วนลดทุกรายการและแสดงราคาสุทธิให้ทันที</p>
-    <div class="promo-pill">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-      ระยะเวลาโปรโมชั่น 18–30 ก.ย. 2569 · จองโปรน่าล็อก 12–17 ก.ย. 2569
-    </div>
   </header>
 
   <div class="tab-row">
@@ -371,7 +368,7 @@
       <!-- BUYBACK TOOL -->
       <section class="card" id="step-buyback">
         <h2>ประเมินมูลค่าล็อกราคาซื้อคืน <span style="font-weight:400;color:var(--muted);font-size:13px;">(True Value Care · Upgrade)</span></h2>
-        <p class="note" style="margin-top:-6px;margin-bottom:14px;">ใช้รุ่นเครื่องจากขั้นตอนที่ 1 เพื่อประเมินมูลค่ารับซื้อคืนโดยประมาณ คิดเป็น % ของราคาปกติ ณ วันที่ซื้อ</p>
+        <p class="note" style="margin-top:-6px;margin-bottom:14px;">ใช้รุ่นเครื่องจากขั้นตอนที่ 1 เพื่อประเมินมูลค่ารับซื้อคืนโดยประมาณ คิดเป็น % ของราคาปกติ ณ วันที่ซื้อ (256GB รับ 65%/55% · มากกว่า 256GB รับ 60%/50%)</p>
         <div class="buyback-grid">
           <div class="select-field">
             <label for="bb-condition">สภาพเครื่อง</label>
@@ -379,10 +376,6 @@
               <option value="gwo">สภาพดี (GWO)</option>
               <option value="dmg">มีตำหนิ/เสียหาย (DMG)</option>
             </select>
-          </div>
-          <div class="select-field">
-            <label for="bb-range">ระยะเวลาตั้งแต่ซื้อ</label>
-            <select id="bb-range"></select>
           </div>
         </div>
         <div class="buyback-result">
@@ -414,6 +407,7 @@
           <span class="num" id="sum-savings">฿0</span>
         </div>
         <div class="extra-lines" id="sum-extra"></div>
+        <div class="upgrade-box" id="sum-upgrade" hidden></div>
       </div>
     </aside>
   </div>
@@ -474,18 +468,10 @@
     {key:'11y', label:'ใช้บริการต่อเนื่อง 11 ปีขึ้นไป', low:1000, high:2000}
   ];
 
-  var BUYBACK_ROWS = [
-    {label:'เดือนที่ 0–3 (ก.ย.69 – ธ.ค.69)',  gwoA:80, gwoB:75, dmgA:70, dmgB:65},
-    {label:'เดือนที่ 4–7 (ม.ค.70 – เม.ย.70)', gwoA:75, gwoB:70, dmgA:65, dmgB:60},
-    {label:'เดือนที่ 8–11 (พ.ค.70 – ส.ค.70)', gwoA:70, gwoB:65, dmgA:60, dmgB:55},
-    {label:'เดือนที่ 12–15 (ก.ย.70 – ธ.ค.70)',gwoA:65, gwoB:60, dmgA:55, dmgB:50},
-    {label:'เดือนที่ 16–19 (ม.ค.71 – เม.ย.71)',gwoA:55, gwoB:55, dmgA:45, dmgB:45},
-    {label:'เดือนที่ 20–23 (พ.ค.71 – ส.ค.71)', gwoA:49, gwoB:49, dmgA:39, dmgB:39},
-    {label:'เดือนที่ 24–27 (ก.ย.71 – ธ.ค.71)', gwoA:44, gwoB:44, dmgA:34, dmgB:34},
-    {label:'เดือนที่ 28–31 (ม.ค.72 – เม.ย.72)',gwoA:39, gwoB:39, dmgA:29, dmgB:29},
-    {label:'เดือนที่ 32–35 (พ.ค.72 – ส.ค.72)', gwoA:34, gwoB:34, dmgA:24, dmgB:24},
-    {label:'เดือนที่ 36 (ก.ย.72)',              gwoA:30, gwoB:30, dmgA:20, dmgB:20}
-  ];
+  var BUYBACK_PCT = {
+    A: {gwo:65, dmg:55},
+    B: {gwo:60, dmg:50}
+  };
 
 var OLD_MODELS = [
     {label:'iPhone 17 256GB',c11:1000,c12:800,c21:500,c22:300},
@@ -604,8 +590,7 @@ var OLD_MODELS = [
       dtaccoinPlatinum:false,
       allMember:false,
       vc:'none',
-      bbCondition:'gwo',
-      bbRangeIdx:0
+      bbCondition:'gwo'
     };
   }
   var state = getDefaultState();
@@ -980,19 +965,17 @@ var OLD_MODELS = [
 
   /* ---------- BUYBACK TOOL ---------- */
   var bbCondition = document.getElementById('bb-condition');
-  var bbRange = document.getElementById('bb-range');
-  BUYBACK_ROWS.forEach(function(r,i){
-    var o = el('option','', r.label); o.value = i; bbRange.appendChild(o);
-  });
-  bbCondition.addEventListener('change', function(){ state.bbCondition = bbCondition.value; renderBuyback(); });
-  bbRange.addEventListener('change', function(){ state.bbRangeIdx = +bbRange.value; renderBuyback(); });
+  bbCondition.addEventListener('change', function(){ state.bbCondition = bbCondition.value; renderAll(); });
+  function buybackPct(m){
+    return BUYBACK_PCT[m.bbTier][state.bbCondition];
+  }
+  function buybackValue(m){
+    return m.rrp * buybackPct(m) / 100;
+  }
   function renderBuyback(){
     var m = getModel();
-    var row = BUYBACK_ROWS[state.bbRangeIdx];
-    var pct;
-    if(state.bbCondition === 'gwo'){ pct = m.bbTier === 'A' ? row.gwoA : row.gwoB; }
-    else { pct = m.bbTier === 'A' ? row.dmgA : row.dmgB; }
-    var value = m.rrp * pct / 100;
+    var pct = buybackPct(m);
+    var value = buybackValue(m);
     document.getElementById('bb-value').textContent = fmt(value) + '  (' + pct + '%)';
   }
 
@@ -1102,6 +1085,27 @@ var OLD_MODELS = [
     var dueToday = finalPrice + deposit + (state.vc === 'yearly' ? m.vcY : 0);
     extra.appendChild(el('div','sum-row',
       '<strong style="font-weight:700;">ยอดชำระโดยประมาณวันนี้</strong><span class="v num" style="font-weight:700;">'+fmt(dueToday)+'</span>'));
+
+    var upgradeBox = document.getElementById('sum-upgrade');
+    if(state.vc === 'none'){
+      upgradeBox.hidden = true;
+    } else {
+      upgradeBox.hidden = false;
+      var bbPct = buybackPct(m);
+      var bbVal = buybackValue(m);
+      var html = '<div class="upgrade-title">ประมาณการปีหน้า (True Value Care · Upgrade)</div>';
+      html += '<div class="sum-row"><span>มูลค่ารับซื้อคืนโดยประมาณ ('+bbPct+'%)</span><span class="v num">'+fmt(bbVal)+'</span></div>';
+      if(state.mode === 'package'){
+        var nextPkgDisc = instantDisc;
+        var nextDue = Math.max(0, m.rrp - nextPkgDisc - bbVal);
+        html += '<div class="sum-row"><span>ส่วนลดค่าเครื่อง (แพ็ก '+state.pkg.toLocaleString('th-TH')+'/ด. เดิม)</span><span class="v num">-'+fmt(nextPkgDisc)+'</span></div>';
+        html += '<div class="sum-row"><strong>ยอดที่ต้องจ่ายปีหน้า (โดยประมาณ)</strong><strong class="v num">'+fmt(nextDue)+'</strong></div>';
+        html += '<div class="upgrade-note">คำนวณจากราคาเครื่องรุ่นเดิม ('+fmt(m.rrp)+') หักส่วนลดแพ็กเกจเดิมและมูลค่ารับซื้อคืนที่ล็อกไว้ เป็นเพียงตัวเลขประมาณการ ราคาเครื่องรุ่นใหม่และเงื่อนไขโปรโมชั่นจริง ณ ปีหน้าอาจเปลี่ยนแปลง</div>';
+      } else {
+        html += '<div class="upgrade-note">ซื้อเครื่องเปล่า — ยังไม่รวมส่วนลดค่าเครื่องจากแพ็กเกจ หากปีหน้าเปลี่ยนมาซื้อพร้อมแพ็กเกจ จะได้ส่วนลดเพิ่มจากมูลค่ารับซื้อคืนข้างต้น</div>';
+      }
+      upgradeBox.innerHTML = html;
+    }
   }
 
 
@@ -1126,7 +1130,6 @@ var OLD_MODELS = [
   resetBtn.addEventListener('click', function(){
     state = getDefaultState();
     bbCondition.value = state.bbCondition;
-    bbRange.value = state.bbRangeIdx;
     renderSeries();
     renderStorage();
     renderAll();
