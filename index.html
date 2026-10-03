@@ -1023,7 +1023,13 @@ var OLD_MODELS = [
   var vcList = document.getElementById('vc-list');
   function renderVC(){
     vcList.innerHTML = '';
-    document.getElementById('vc-included-note').hidden = !(state.mode === 'package' && state.pkg === 1499);
+    var isIncludedPkg = (state.mode === 'package' && state.pkg === 1499);
+    document.getElementById('vc-included-note').hidden = !isIncludedPkg;
+    vcList.hidden = isIncludedPkg;
+    if(isIncludedPkg){
+      state.vc = 'none';
+      return;
+    }
     var m = getModel();
     var defs = [
       {key:'none', label:'ไม่เพิ่มความคุ้มครอง', note:''},
